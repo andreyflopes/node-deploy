@@ -6,10 +6,14 @@ const app = fastify()
 
 const prisma = new PrismaClient()
 
-app.get('/vagas', async()=>{
-    const vagas = await prisma.vaga.findMany()
+app.get('/vagas', async(req, res)=>{
+   try{ const vagas = await prisma.vaga.findMany()
 
-    return {vagas}
+    return res.status(200).json(vagas)
+      }
+    catch(error){
+       console.log(error)
+           res.status(500).json("errorrrrr")}
 })
 
 app.post('/vagas', async(request, reply)=>{
