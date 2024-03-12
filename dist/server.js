@@ -26,11 +26,25 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var import_client = require("@prisma/client");
 var import_fastify = __toESM(require("fastify"));
 var import_zod = require("zod");
+var import_cors = __toESM(require("@fastify/cors"));
 var app = (0, import_fastify.default)();
 var prisma = new import_client.PrismaClient();
-app.get("/vagas", async () => {
-  const vagas = await prisma.vaga.findMany();
-  return { vagas };
+app.register(import_cors.default, {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"]
+});
+app.get("/vagas", async (request, reply) => {
+  try {
+    const vagas = await prisma.vaga.findMany();
+    reply.headers({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET",
+      "Access-Control-Allow-Headers": "Content-Type"
+    });
+    reply.send(vagas);
+  } catch (error) {
+    reply.status(500).send({ error: "Erro ao buscar vagas" });
+  }
 });
 app.post("/vagas", async (request, reply) => {
   const creteUserSchema = import_zod.z.object({
@@ -54,5 +68,5 @@ app.listen({
   host: "0.0.0.0",
   port: process.env.PORT ? Number(process.env.PORT) : 3333
 }).then(() => {
-  console.log("HTTP server running");
+  console.log(`HTTP server running`);
 });
