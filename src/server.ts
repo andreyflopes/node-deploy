@@ -7,15 +7,18 @@ const app = fastify()
 const prisma = new PrismaClient()
 
 app.get('/vagas', async(request, reply)=>{
-   try{ const vagas = await prisma.vaga.findMany()
-
-   reply
-      .code(200)
-      .json(vagas)
-      }
-    catch(error){
-       console.log(error)
-           res.status(500).json("errorrrrr")}
+    try {
+        // Buscar todas as vagas do banco de dados
+        const vagas = await prisma.vaga.findMany();
+        
+        // Enviar a resposta com os dados das vagas
+        reply.send(vagas);
+    } catch (error) {
+        // Se ocorrer um erro, enviar uma resposta de erro
+        reply.status(500).send({ error: 'Erro ao buscar vagas' });
+    }
+   
+           
 })
 
 app.post('/vagas', async(request, reply)=>{
