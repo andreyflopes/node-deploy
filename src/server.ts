@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import fastify from "fastify";
-import { z } from 'zod'
+import { string, z } from 'zod'
 import fastifyCors from "@fastify/cors"; 
+import { strict } from "assert";
 
 
 
@@ -57,6 +58,54 @@ app.post('/vagas', async(request, reply)=>{
 
     return reply.status(201).send()
 })
+
+
+
+
+app.delete('/vagas/:id', async (request, reply) => {
+    const id = String(request.params)
+
+    try {
+        // Exclui a vaga com o ID fornecido utilizando o Prisma
+        await prisma.vaga.delete({
+            where: {
+                id: id // O tipo de id é string, e é o tipo esperado pelo Prisma
+            }
+        });
+
+        reply.status(204).send(); // Retorna status 204 (Sem conteúdo) para indicar que a exclusão foi bem-sucedida
+    } catch (error) {
+        console.error('(back) Erro ao excluir vaga:', error);
+        reply.status(500).send({ error: 'Erro ao excluir vaga' }); // Retorna status 500 (Erro do servidor) em caso de erro
+    }
+});
+
+// // Rota para editar uma vaga pelo ID
+// app.put('/vagas/:id', async (request, reply) => {
+//     const { id } = request.params;
+//     const { cargo, empresa, link, status } = request.body;
+
+//     try {
+//         // Edita a vaga com o ID fornecido utilizando o Prisma
+//         await prisma.vaga.update({
+//             where: {
+//                 id: parseInt(id) // Converte o ID para um número, se necessário
+//             },
+//             data: {
+//                 cargo,
+//                 empresa,
+//                 link,
+//                 status
+//             }
+//         });
+
+//         reply.status(204).send(); // Retorna status 204 (Sem conteúdo) para indicar que a edição foi bem-sucedida
+//     } catch (error) {
+//         console.error('(back) Erro ao editar vaga:', error);
+//         reply.status(500).send({ error: 'Erro ao editar vaga' }); // Retorna status 500 (Erro do servidor) em caso de erro
+//     }
+// });
+
 
 app.listen({
     host: '0.0.0.0',

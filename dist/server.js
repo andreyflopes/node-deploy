@@ -64,9 +64,24 @@ app.post("/vagas", async (request, reply) => {
   });
   return reply.status(201).send();
 });
+app.delete("/vagas/:id", async (request, reply) => {
+  const id = String(request.params);
+  try {
+    await prisma.vaga.delete({
+      where: {
+        id
+        // O tipo de id é string, e é o tipo esperado pelo Prisma
+      }
+    });
+    reply.status(204).send();
+  } catch (error) {
+    console.error("(back) Erro ao excluir vaga:", error);
+    reply.status(500).send({ error: "Erro ao excluir vaga" });
+  }
+});
 app.listen({
   host: "0.0.0.0",
   port: process.env.PORT ? Number(process.env.PORT) : 3333
 }).then(() => {
-  console.log(`HTTP server running`);
+  console.log("HTTP server running");
 });
