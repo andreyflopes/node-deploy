@@ -87,33 +87,44 @@ app.delete('/vagas/:id', async (request: FastifyRequest<{ Params: RouteParams }>
         reply.status(400).send({ error: 'ID da vaga não fornecido' }); // Retorna status 400 (Bad Request) se o ID não foi fornecido
     }
 });
+// Defina uma interface para os dados de edição da vaga
+interface EdicaoVaga {
+    cargo: string;
+    empresa: string;
+    link: string;
+    status: string;
+}
 
+// Defina uma interface para os parâmetros da rota
+interface RouteParams {
+    id: string;
+}
 
-// // Rota para editar uma vaga pelo ID
-// app.put('/vagas/:id', async (request, reply) => {
-//     const { id } = request.params;
-//     const { cargo, empresa, link, status } = request.body;
+// Use as interfaces ao definir os tipos de request.params e request.body
+app.put('/vagas/:id', async (request: FastifyRequest<{ Params: RouteParams, Body: EdicaoVaga }>, reply: FastifyReply) => {
+    const id = request.params.id;
+    const { cargo, empresa, link, status } = request.body;
 
-//     try {
-//         // Edita a vaga com o ID fornecido utilizando o Prisma
-//         await prisma.vaga.update({
-//             where: {
-//                 id: parseInt(id) // Converte o ID para um número, se necessário
-//             },
-//             data: {
-//                 cargo,
-//                 empresa,
-//                 link,
-//                 status
-//             }
-//         });
+    try {
+        const updatedVaga = await prisma.vaga.update({
+            where: {
+                id: id
+            },
+            data: {
+                cargo: cargo,
+                empresa: empresa,
+                link: link,
+                status: status
+            }
+        });
 
-//         reply.status(204).send(); // Retorna status 204 (Sem conteúdo) para indicar que a edição foi bem-sucedida
-//     } catch (error) {
-//         console.error('(back) Erro ao editar vaga:', error);
-//         reply.status(500).send({ error: 'Erro ao editar vaga' }); // Retorna status 500 (Erro do servidor) em caso de erro
-//     }
-// });
+        reply.send(updatedVaga);
+    } catch (error) {
+        console.error('(back) Erro ao editar vaga:', error);
+        reply.status(500).send({ error: 'Erro ao editar vaga' });
+    }
+});
+
 
 
 app.listen({

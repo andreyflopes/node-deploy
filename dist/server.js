@@ -65,18 +65,44 @@ app.post("/vagas", async (request, reply) => {
   return reply.status(201).send();
 });
 app.delete("/vagas/:id", async (request, reply) => {
-  const id = String(request.params);
+  const params = request.params;
+  const id = params.id;
+  if (id !== void 0) {
+    try {
+      await prisma.vaga.delete({
+        where: {
+          id
+          // O tipo de id é string, e é o tipo esperado pelo Prisma
+        }
+      });
+      reply.status(204).send();
+    } catch (error) {
+      console.error("(back) Erro ao excluir vaga:", error);
+      reply.status(500).send({ error: "Erro ao excluir vaga" });
+    }
+  } else {
+    reply.status(400).send({ error: "ID da vaga n\xE3o fornecido" });
+  }
+});
+app.put("/vagas/:id", async (request, reply) => {
+  const id = request.params.id;
+  const { cargo, empresa, link, status } = request.body;
   try {
-    await prisma.vaga.delete({
+    const updatedVaga = await prisma.vaga.update({
       where: {
         id
-        // O tipo de id é string, e é o tipo esperado pelo Prisma
+      },
+      data: {
+        cargo,
+        empresa,
+        link,
+        status
       }
     });
-    reply.status(204).send();
+    reply.send(updatedVaga);
   } catch (error) {
-    console.error("(back) Erro ao excluir vaga:", error);
-    reply.status(500).send({ error: "Erro ao excluir vaga" });
+    console.error("(back) Erro ao editar vaga:", error);
+    reply.status(500).send({ error: "Erro ao editar vaga" });
   }
 });
 app.listen({
