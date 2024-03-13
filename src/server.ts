@@ -2,7 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import fastify from "fastify";
 import { string, z } from 'zod'
 import fastifyCors from "@fastify/cors"; 
-import { strict } from "assert";
+
+import { FastifyRequest, FastifyReply } from 'fastify';
 
 
 
@@ -59,26 +60,34 @@ app.post('/vagas', async(request, reply)=>{
     return reply.status(201).send()
 })
 
+interface RouteParams {
+    id: string;
+}
 
+app.delete('/vagas/:id', async (request: FastifyRequest<{ Params: RouteParams }>, reply: FastifyReply) => {
+    const params = request.params as RouteParams; // Atribuição de tipo para os parâmetros da rota
 
+    // Extração do ID da rota
+    const id = params.id;   
+    if (id !== undefined) {
+        try {
+            // Exclui a vaga com o ID fornecido utilizando o Prisma
+            await prisma.vaga.delete({
+                where: {
+                    id: id // O tipo de id é string, e é o tipo esperado pelo Prisma
+                }
+            });
 
-app.delete('/vagas/:id', async (request, reply) => {
-    const id = String(request.params)
-
-    try {
-        // Exclui a vaga com o ID fornecido utilizando o Prisma
-        await prisma.vaga.delete({
-            where: {
-                id: id // O tipo de id é string, e é o tipo esperado pelo Prisma
-            }
-        });
-
-        reply.status(204).send(); // Retorna status 204 (Sem conteúdo) para indicar que a exclusão foi bem-sucedida
-    } catch (error) {
-        console.error('(back) Erro ao excluir vaga:', error);
-        reply.status(500).send({ error: 'Erro ao excluir vaga' }); // Retorna status 500 (Erro do servidor) em caso de erro
+            reply.status(204).send(); // Retorna status 204 (Sem conteúdo) para indicar que a exclusão foi bem-sucedida
+        } catch (error) {
+            console.error('(back) Erro ao excluir vaga:', error);
+            reply.status(500).send({ error: 'Erro ao excluir vaga' }); // Retorna status 500 (Erro do servidor) em caso de erro
+        }
+    } else {
+        reply.status(400).send({ error: 'ID da vaga não fornecido' }); // Retorna status 400 (Bad Request) se o ID não foi fornecido
     }
 });
+
 
 // // Rota para editar uma vaga pelo ID
 // app.put('/vagas/:id', async (request, reply) => {
