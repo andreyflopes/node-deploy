@@ -46,6 +46,25 @@ app.get("/vagas", async (request, reply) => {
     reply.status(500).send({ error: "Erro ao buscar vagas" });
   }
 });
+app.get("/vagas/:id", async (request, reply) => {
+  const params = request.params;
+  const id = params.id;
+  try {
+    const vaga = await prisma.vaga.findUnique({
+      where: {
+        id
+      }
+    });
+    if (vaga) {
+      reply.send(vaga);
+    } else {
+      reply.status(404).send({ error: "Vaga n\xE3o encontrada" });
+    }
+  } catch (error) {
+    console.error("(back) Erro ao buscar vaga:", error);
+    reply.status(500).send({ error: "Erro ao buscar vaga" });
+  }
+});
 app.post("/vagas", async (request, reply) => {
   const creteUserSchema = import_zod.z.object({
     cargo: import_zod.z.string(),

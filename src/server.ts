@@ -38,6 +38,46 @@ app.get('/vagas', async (request, reply) => {
         reply.status(500).send({ error: 'Erro ao buscar vagas' });
     }
 });
+// Define uma interface para os parâmetros da rota
+interface RouteParams {
+    id: string;
+}
+
+// Define uma interface para os dados da vaga
+interface Vaga {
+    cargo: string;
+    empresa: string;
+    link: string;
+    status: string;
+}
+
+app.get('/vagas/:id', async (request: FastifyRequest<{ Params: RouteParams }>, reply: FastifyReply) => {
+    const params = request.params as RouteParams; // Atribuição de tipo para os parâmetros da rota
+    const id = params.id; // Agora o TypeScript sabe que 'id' é do tipo string
+
+    try {
+        // Buscar a vaga do banco de dados com base no ID
+        const vaga = await prisma.vaga.findUnique({
+            where: {
+                id: id
+            }
+        });
+
+        // Se a vaga existe, envie-a como resposta
+        if (vaga) {
+            reply.send(vaga);
+        } else {
+            // Se a vaga não existe, retorne um erro 404 (Not Found)
+            reply.status(404).send({ error: 'Vaga não encontrada' });
+        }
+    } catch (error) {
+        // Se ocorrer um erro, enviar uma resposta de erro 500 (Internal Server Error)
+        console.error('(back) Erro ao buscar vaga:', error);
+        reply.status(500).send({ error: 'Erro ao buscar vaga' });
+    }
+});
+
+
 
 app.post('/vagas', async(request, reply)=>{
     const creteUserSchema = z.object({
